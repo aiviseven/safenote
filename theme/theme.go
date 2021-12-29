@@ -1,5 +1,8 @@
 package theme
 
+//go:generate fyne bundle -package theme -o simkai.go simhei.ttf
+//go:generate fyne bundle -package theme -o simhei.go simhei.ttf
+
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"

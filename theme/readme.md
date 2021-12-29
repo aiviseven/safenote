@@ -1,3 +1,3 @@
-fyne bundle --pkg theme simhei.ttf > simhei.go
+fyne bundle -package theme -o simkai.go simhei.ttf
 
-fyne bundle --pkg theme simkai.ttf > simkai.go
+fyne bundle -package theme -o simhei.go simhei.ttf
