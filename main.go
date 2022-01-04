@@ -53,6 +53,9 @@ func main() {
 
 	text := widget.NewMultiLineEntry()
 	text.Wrapping = fyne.TextTruncate
+	text.OnChanged = func(s string) {
+		fmt.Println("text changed")
+	}
 	rc := container.NewMax()
 	rc.Objects = []fyne.CanvasObject{text}
 	rc.Refresh()
@@ -91,7 +94,9 @@ func main() {
 		},
 	}
 	toolbar := widget.NewToolbar(
-		widget.NewToolbarAction(theme.ContentAddIcon(), func() { fmt.Println("add") }),
+		widget.NewToolbarAction(theme.FileTextIcon(), func() { fmt.Println("add file") }),
+		widget.NewToolbarAction(theme.FolderNewIcon(), func() { fmt.Println("add dir") }),
+		widget.NewToolbarAction(theme.DeleteIcon(), func() { fmt.Println("delete") }),
 		widget.NewToolbarAction(theme.DocumentSaveIcon(), func() {
 			err := saveFile(a, text)
 			if err != nil {
@@ -158,6 +163,10 @@ func loadFileText(filePath string, entry *widget.Entry) error {
 // saveFile 保存文件
 func saveFile(a fyne.App, entry *widget.Entry) error {
 	filePath := a.Preferences().String(proKeyCurrFile)
+	fmt.Println("save file: ", filePath)
+	if filePath == "" {
+		return nil
+	}
 	dataStr := entry.Text
 
 	f, err := os.Create(filePath)
