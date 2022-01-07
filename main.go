@@ -20,9 +20,9 @@ import (
 )
 
 type fileNode struct {
-	Name, Path string
-	IsDir      bool
-	Children   []string
+	Name, Path    string
+	IsDir, LoadOk bool
+	Children      []string
 }
 
 var appHomeDir, appDataDir string
@@ -101,12 +101,16 @@ func main() {
 	ltb := widget.NewToolbar(
 		//添加文件按钮
 		widget.NewToolbarAction(theme.FileTextIcon(), func() { dialogAddFile(w, lc) }),
+		//添加文件夹按钮
 		widget.NewToolbarAction(theme.FolderNewIcon(), func() { dialogAddDir(w, lc) }),
+		//删除文件或文件夹
 		widget.NewToolbarAction(theme.DeleteIcon(), func() { dialogDelFile(w, lc) }),
+		//保存文本内容到文件
 		widget.NewToolbarAction(theme.DocumentSaveIcon(), func() {
-			err := saveFile(a, text)
+			err := saveFile(text)
 			if err != nil {
 				fmt.Printf("save file error: %v\n", err)
+				dialog.ShowError(err, w)
 			}
 		}),
 	)
@@ -161,13 +165,13 @@ func updateTreeNode(nodePath string) error {
 	for _, f := range files {
 		cp := nodePath + string(filepath.Separator) + f.Name()
 		paths = append(paths, cp)
-		treeData[cp] = &fileNode{f.Name(), cp, f.IsDir(), nil}
+		treeData[cp] = &fileNode{Name: f.Name(), Path: cp, IsDir: f.IsDir()}
 	}
 
 	if nodePath == appDataDir {
-		treeData[""] = &fileNode{rf.Name(), nodePath, rf.IsDir(), paths}
+		treeData[""] = &fileNode{Name: rf.Name(), Path: nodePath, IsDir: rf.IsDir(), Children: paths}
 	} else {
-		treeData[nodePath] = &fileNode{rf.Name(), nodePath, rf.IsDir(), paths}
+		treeData[nodePath] = &fileNode{Name: rf.Name(), Path: nodePath, IsDir: rf.IsDir(), Children: paths}
 	}
 	return nil
 }
@@ -273,7 +277,7 @@ func dialogDelFile(w fyne.Window, tree *widget.Tree) {
 			}
 			tree.Refresh()
 		} else {
-			err := errors.New("请选择一个文件或文件夹！")
+			err := errors.New("请选择一个文件或文件夹")
 			dialog.ShowError(err, w)
 		}
 	}, w)
@@ -303,14 +307,18 @@ func loadFileText(node *fileNode, entry *widget.Entry) error {
 			content = string(decryptData)
 		}
 	}
-
+	node.LoadOk = true
 	return nil
 }
 
 // saveFile 保存文件
-func saveFile(a fyne.App, entry *widget.Entry) error {
+func saveFile(entry *widget.Entry) error {
 	if currFile == nil || currFile.IsDir || currFile.Path == "" {
-		return nil
+		return errors.New("请选择一个需要保存的文件")
+	}
+
+	if !currFile.LoadOk {
+		return errors.New("不能保存打开失败的文件")
 	}
 
 	fmt.Println("start save file: ", currFile.Path)
@@ -348,7 +356,7 @@ func mkdir(dirPath string) (string, error) {
 	if isExist, _ := isExists(dirPath); !isExist {
 		err := os.MkdirAll(dirPath, os.ModePerm)
 		if err != nil {
-			return "", errors.New("创建输出路径出错！")
+			return "", errors.New("创建文件夹出错")
 		}
 	}
 	return dirPath, nil
