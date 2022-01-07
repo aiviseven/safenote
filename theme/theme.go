@@ -1,6 +1,6 @@
 package theme
 
-//go:generate fyne bundle -package theme -o simkai.go simhei.ttf
+//go:generate fyne bundle -package theme -o simkai.go simkai.ttf
 //go:generate fyne bundle -package theme -o simhei.go simhei.ttf
 
 import (
