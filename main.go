@@ -204,7 +204,12 @@ func dialogAddFile(w fyne.Window, tree *widget.Tree) {
 			fmt.Printf("创建文件[%s]失败: %v\n", p, err)
 			return
 		}
-		defer f.Close()
+		defer func() {
+			err := f.Close()
+			if err != nil {
+				fmt.Printf("关闭文件[%s]失败: %v\n", p, err)
+			}
+		}()
 
 		err = updateTreeNode(dir)
 		if err != nil {
