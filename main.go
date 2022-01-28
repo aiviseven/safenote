@@ -280,6 +280,7 @@ func dialogDelFile(w fyne.Window, tree *widget.Tree) {
 				fmt.Printf("更新节点[%s]失败: %v\n", node, err)
 				return
 			}
+			currFile = nil
 			tree.Refresh()
 		} else {
 			err := errors.New("请选择一个文件或文件夹")
